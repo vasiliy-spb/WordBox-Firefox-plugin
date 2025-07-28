@@ -1,0 +1,89 @@
+/* src/styles/popup.css */
+
+body {
+    font-family: Arial, sans-serif;
+    width: 300px; /* Ширина окна плагина */
+    padding: 15px;
+    background-color: #f9f9f9;
+    color: #333;
+    margin: 0;
+}
+
+h1 {
+    font-size: 1.2em;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #0056b3;
+    text-align: center;
+}
+
+#wordList {
+    max-height: 300px; /* Максимальная высота списка слов */
+    overflow-y: auto; /* Прокрутка, если слов много */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.word-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 5px;
+    border-bottom: 1px dashed #eee;
+}
+
+.word-item:last-child {
+    border-bottom: none;
+}
+
+.word-item span {
+    font-size: 1em;
+    font-weight: bold;
+    color: #555;
+    word-break: break-all; /* Разрывать длинные слова */
+}
+
+.delete-button {
+    background-color: #dc3545; /* Красный цвет */
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 0.8em;
+    margin-left: 10px;
+    white-space: nowrap; /* Не переносить текст кнопки */
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
+#exportButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff; /* Синий цвет */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    box-sizing: border-box; /* Учитываем padding в ширине */
+}
+
+#exportButton:hover {
+    background-color: #0056b3;
+}
+
+#exportButton svg {
+    fill: white;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+}

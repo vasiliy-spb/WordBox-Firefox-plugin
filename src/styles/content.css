@@ -1,0 +1,22 @@
+/* src/styles/content.css */
+
+/* Стили для иконки добавления слова */
+/* #wordbox-add-icon { */
+    /* Эти стили уже заданы в content.js, но можно переопределить/дополнить здесь */
+    /* background-color: white; */
+    /* border: 1px solid #ccc; */
+    /* border-radius: 4px; */
+    /* padding: 2px; */
+    /* box-shadow: 0 2px 5px rgba(0,0,0,0.2); */
+    /* display: flex; */
+    /* align-items: center; */
+    /* justify-content: center; */
+    /* color: #333; */
+/* } */
+
+/* Дополнительные стили, если понадобятся */
+#wordbox-add-icon svg {
+    display: block; /* Убирает лишние отступы у SVG */
+    width: 20px; /* Уменьшаем размер иконки внутри контейнера */
+    height: 20px;
+}
