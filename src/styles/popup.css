@@ -30,32 +30,71 @@ h1 {
 .word-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start; /* Выравниваем элементы по верху */
     padding: 8px 5px;
     border-bottom: 1px dashed #eee;
+    position: relative; /* Для абсолютного позиционирования кнопки удаления */
+    padding-right: 30px; /* Отступ справа, чтобы кнопка не перекрывала текст */
 }
 
 .word-item:last-child {
     border-bottom: none;
 }
 
-.word-item span {
+.word-content {
+    flex-grow: 1; /* Позволяет содержимому слова занимать все доступное пространство */
+    line-height: 1.2; /* УМЕНЬШЕНО: Межстрочный интервал для всего блока контента */
+}
+
+.word-item strong {
     font-size: 1em;
     font-weight: bold;
     color: #555;
     word-break: break-all; /* Разрывать длинные слова */
+    display: block;
+    line-height: 1.2; /* УМЕНЬШЕНО: Межстрочный интервал для самого слова */
 }
 
+.word-item span {
+    font-size: 0.9em; /* Чуть меньше размер для транскрипции и перевода */
+    color: #777;
+    display: block; /* Каждая часть на новой строке */
+    line-height: 1.2; /* УМЕНЬШЕНО: Межстрочный интервал для транскрипции и перевода */
+    margin-top: 2px; /* Небольшой отступ сверху для транскрипции и перевода */
+}
+
+/* Стили для транскрипции, чтобы она была в квадратных скобках */
+.word-item span.transcription {
+    font-family: 'Segoe UI Mono', 'Consolas', monospace; /* Моноширинный шрифт для транскрипции */
+    color: #999; /* Чуть светлее цвет */
+}
+
+/* Стили для перевода */
+.word-item span.translation {
+    color: #333; /* Более темный цвет для перевода */
+    font-style: italic; /* Курсив для перевода */
+}
+
+
 .delete-button {
+    position: absolute; /* Абсолютное позиционирование */
+    top: 5px; /* Отступ сверху */
+    right: 5px; /* Отступ справа */
     background-color: #dc3545; /* Красный цвет */
     color: white;
     border: none;
-    border-radius: 3px;
-    padding: 5px 10px;
+    border-radius: 50%; /* Делаем кнопку круглой */
+    width: 20px; /* Ширина */
+    height: 20px; /* Высота */
+    display: flex; /* Используем flexbox для центрирования содержимого */
+    align-items: center; /* Центрирование по вертикали */
+    justify-content: center; /* Центрирование по горизонтали */
+    font-size: 1.2em; /* Размер крестика */
     cursor: pointer;
-    font-size: 0.8em;
-    margin-left: 10px;
-    white-space: nowrap; /* Не переносить текст кнопки */
+    line-height: 1; /* Убираем лишний интервал у крестика */
+    padding: 0; /* Убираем внутренние отступы */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* Небольшая тень */
+    transition: background-color 0.2s ease; /* Плавный переход цвета */
 }
 
 .delete-button:hover {

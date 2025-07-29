@@ -27,7 +27,7 @@ setTimeout(initializeDatabase, 0);
 /**
  * Асинхронная функция для перевода слова с использованием Skyeng Dictionary API.
  * @param {string} word - Слово для перевода.
- * @returns {Promise<{translation: string, transcription: string}>} - Промис, который разрешается объектом с переводом и транскрипцией.
+ * @returns {Promise<{translation: string[], transcription: string}>} - Промис, который разрешается объектом с массивом переводов и транскрипцией.
  */
 async function translateWord(word) {
   const url = `https://dictionary.skyeng.ru/api/public/v1/words/search?search=${encodeURIComponent(word)}`;
@@ -44,32 +44,35 @@ async function translateWord(word) {
     const data = await response.json();
     console.log(`WordBox background.js: Ответ от Skyeng API для "${word}":`, data);
 
-    let translation = '';
+    let translations = []; // Изменено на массив
     let transcription = '';
 
     // Skyeng API возвращает массив слов, берем первое совпадение
     if (data && data.length > 0 && data[0].meanings && data[0].meanings.length > 0) {
-      const firstMeaning = data[0].meanings[0];
-      if (firstMeaning.translation && firstMeaning.translation.text) {
-        translation = firstMeaning.translation.text;
+      // Собираем все переводы из всех значений (meanings)
+      translations = data[0].meanings
+        .filter(meaning => meaning.translation && meaning.translation.text)
+        .map(meaning => meaning.translation.text);
+
+      // Транскрипцию берем из первого значения (обычно она одинакова)
+      if (data[0].meanings[0].transcription) {
+        transcription = data[0].meanings[0].transcription;
       }
-      if (firstMeaning.transcription) {
-        transcription = firstMeaning.transcription;
-      }
-      console.log(`WordBox background.js: Найден перевод для "${word}": "${translation}" (Транскрипция: "${transcription}")`);
+
+      console.log(`WordBox background.js: Найдены переводы для "${word}": "${translations.join(', ')}" (Транскрипция: "${transcription}")`);
     } else {
       console.log(`WordBox background.js: Перевод для "${word}" не найден в Skyeng API.`);
     }
 
     return {
-      translation,
+      translation: translations, // Теперь это массив
       transcription
     };
 
   } catch (error) {
     console.error(`WordBox background.js: Ошибка при переводе слова "${word}" через Skyeng API:`, error);
     return {
-      translation: '',
+      translation: [], // Возвращаем пустой массив
       transcription: ''
     }; // Возвращаем пустые строки в случае ошибки
   }
@@ -94,14 +97,14 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case 'addWord':
       (async () => {
         const {
-          translation: translatedText,
+          translation: translatedTexts, // Теперь это массив
           transcription: wordTranscription
         } = await translateWord(message.word);
 
         const wordData = {
           id: message.word.toLowerCase(), // ID всегда в нижнем регистре
           word: message.word, // Оригинальное слово сохраняем как есть
-          translation: translatedText,
+          translation: translatedTexts, // Сохраняем массив переводов
           transcription: wordTranscription,
           dateAdded: new Date().toISOString(),
           dateLastSeen: new Date().toISOString(),

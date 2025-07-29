@@ -24,13 +24,14 @@ async function displayWords() {
         const wordElement = document.createElement('div');
         wordElement.className = 'word-item';
         // Отображаем слово, транскрипцию и перевод, если они есть
+        // Слово отображаем в нижнем регистре (word.id)
         wordElement.innerHTML = `
-          <span>
-            <strong>${word.word}</strong>
-            ${word.transcription ? `<br><small>Транскрипция: ${word.transcription}</small>` : ''}
-            ${word.translation ? `<br><small>Перевод: ${word.translation}</small>` : ''}
-          </span>
-          <button class="delete-button" data-id="${word.id}">Удалить</button>
+          <div class="word-content">
+            <strong>${word.id}</strong>
+            ${word.transcription ? `<span class="transcription">[${word.transcription}]</span>` : ''}
+            ${Array.isArray(word.translation) && word.translation.length > 0 ? `<span class="translation">${word.translation.join(', ')}</span>` : ''}
+          </div>
+          <button class="delete-button" data-id="${word.id}">×</button>
         `;
         wordListContainer.appendChild(wordElement);
       });
