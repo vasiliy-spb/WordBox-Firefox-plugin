@@ -7,8 +7,8 @@
     --card-bg-color: #fff;
     --border-color: #ddd;
     --header-color: #0056b3;
-    --delete-btn-bg: #dc3545;
-    --delete-btn-hover-bg: #c82333;
+    --delete-icon-color: #dc3545; /* Красный цвет для иконки удаления */
+    --delete-icon-hover-bg: rgba(220, 53, 69, 0.1); /* Прозрачный красный фон при наведении */
     --export-btn-bg: #007bff;
     --export-btn-hover-bg: #0056b3;
     --transcription-color: #999;
@@ -23,8 +23,8 @@ body.dark-theme {
     --card-bg-color: #3a3a3a;
     --border-color: #555;
     --header-color: #66aaff; /* Более светлый синий для контраста */
-    --delete-btn-bg: #e74c3c; /* Немного ярче для тёмного фона */
-    --delete-btn-hover-bg: #c0392b;
+    --delete-icon-color: #e74c3c; /* Немного ярче красный для тёмного фона */
+    --delete-icon-hover-bg: rgba(231, 76, 60, 0.15); /* Прозрачный красный фон при наведении */
     --export-btn-bg: #4a90e2; /* Более светлый синий */
     --export-btn-hover-bg: #357bd8;
     --transcription-color: #b0b0b0; /* Светлее для тёмного фона */
@@ -120,30 +120,31 @@ h1 {
     position: absolute;
     top: 5px;
     right: 5px;
-    background-color: var(--delete-btn-bg); /* Используем переменную */
-    color: white; /* Цвет для SVG stroke */
-    border: none;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
+    background: none; /* УБРАЛИ: Нет красного фона */
+    border: none; /* УБРАЛИ: Нет границы */
+    border-radius: 50%; /* добавил скругления, чтобы не было визуальных артефактов */
+    width: 18px; /* уменьшил размер кнопки */
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     padding: 0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    transition: background-color 0.2s ease;
+    box-shadow: none; /* УБРАЛИ: Нет тени, т.к. нет фона */
+    transition: background-color 0.2s ease, color 0.2s ease; /* Плавный переход для фона и цвета */
+    color: var(--delete-icon-color); /* ЦВЕТ ИКОНКИ: будет красный */
 }
 
 .delete-button:hover {
-    background-color: var(--delete-btn-hover-bg); /* Используем переменную */
+    background-color: var(--delete-icon-hover-bg); /* Прозрачный красный фон при наведении */
+    border-radius: 50%; /* Делаем круглым при наведении для визуального эффекта */
 }
 
 .delete-button svg {
-    width: 14px;
-    height: 14px;
-    /* fill: currentColor; */ /* Удалено, так как Feather Icons используют stroke */
-    stroke: currentColor; /* Указываем, что цвет обводки берется из color родителя */
+    width: 100%; /* SVG заполняет всю кнопку */
+    height: 100%;
+    stroke: currentColor; /* Цвет обводки SVG берется из color родителя */
+    fill: none; /* У Feather Icons fill: none по умолчанию */
     display: block;
 }
 
@@ -200,8 +201,8 @@ body.dark-theme .theme-toggle-button:hover {
 .theme-icon {
     width: 20px;
     height: 20px;
-    /* fill: currentColor; */ /* Удалено, так как Feather Icons используют stroke */
-    stroke: currentColor; /* Указываем, что цвет обводки берется из color родителя */
+    stroke: currentColor; /* Цвет обводки берется из color родителя */
+    fill: none; /* Feather Icons обычно не имеют fill */
 }
 
 /* ЕСЛИ ТЕМА СВЕТЛАЯ (ПО УМОЛЧАНИЮ), ПОКАЗЫВАЕМ ЛУНУ */
