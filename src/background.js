@@ -1,14 +1,12 @@
 // src/background.js
 
-// Переменная для хранения объекта базы данных IndexedDB
 let db = null;
 
 // Функция для инициализации IndexedDB
 function initializeDatabase() {
-  // Проверяем, что window.WordBoxDB уже доступен
   if (typeof window.WordBoxDB === 'undefined') {
     console.error('WordBox background.js: window.WordBoxDB is not defined. Retrying initialization...');
-    setTimeout(initializeDatabase, 100); // Повторить попытку через 100 мс
+    setTimeout(initializeDatabase, 100);
     return;
   }
 
@@ -22,71 +20,127 @@ function initializeDatabase() {
     });
 }
 
-// Запускаем инициализацию с небольшой задержкой, чтобы гарантировать,
-// что indexedDB.js успел полностью выполниться и прикрепить WordBoxDB к window.
+// Запускаем инициализацию с небольшой задержкой
 setTimeout(initializeDatabase, 0);
+
+
+/**
+ * Асинхронная функция для перевода слова с использованием Skyeng Dictionary API.
+ * @param {string} word - Слово для перевода.
+ * @returns {Promise<{translation: string, transcription: string}>} - Промис, который разрешается объектом с переводом и транскрипцией.
+ */
+async function translateWord(word) {
+  const url = `https://dictionary.skyeng.ru/api/public/v1/words/search?search=${encodeURIComponent(word)}`;
+
+  try {
+    console.log(`WordBox background.js: Попытка перевести слово через Skyeng API: "${word}"`);
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log(`WordBox background.js: Ответ от Skyeng API для "${word}":`, data);
+
+    let translation = '';
+    let transcription = '';
+
+    // Skyeng API возвращает массив слов, берем первое совпадение
+    if (data && data.length > 0 && data[0].meanings && data[0].meanings.length > 0) {
+      const firstMeaning = data[0].meanings[0];
+      if (firstMeaning.translation && firstMeaning.translation.text) {
+        translation = firstMeaning.translation.text;
+      }
+      if (firstMeaning.transcription) {
+        transcription = firstMeaning.transcription;
+      }
+      console.log(`WordBox background.js: Найден перевод для "${word}": "${translation}" (Транскрипция: "${transcription}")`);
+    } else {
+      console.log(`WordBox background.js: Перевод для "${word}" не найден в Skyeng API.`);
+    }
+
+    return {
+      translation,
+      transcription
+    };
+
+  } catch (error) {
+    console.error(`WordBox background.js: Ошибка при переводе слова "${word}" через Skyeng API:`, error);
+    return {
+      translation: '',
+      transcription: ''
+    }; // Возвращаем пустые строки в случае ошибки
+  }
+}
 
 
 // Обработчик сообщений от content-скрипта или popup-скрипта
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('WordBox background.js: Получено сообщение:', message); // Лог: получено сообщение
-  console.log('WordBox background.js: Действие:', message.action); // Лог: действие сообщения
+  console.log('WordBox background.js: Получено сообщение:', message);
+  console.log('WordBox background.js: Действие:', message.action);
 
-  // Проверяем, что база данных уже открыта
   if (!db) {
     console.error('WordBox background.js: Database not initialized. Cannot process action:', message.action);
     sendResponse({
       status: 'error',
       message: 'Database not initialized.'
     });
-    return true; // Важно вернуть true для асинхронной отправки ответа
+    return true;
   }
 
-  // Используем switch для обработки различных действий
   switch (message.action) {
     case 'addWord':
-      const wordData = {
-        id: message.word.toLowerCase(), // Используем слово в нижнем регистре как ID для уникальности
-        word: message.word,
-        translation: "",
-        transcription: "",
-        dateAdded: new Date().toISOString(),
-        dateLastSeen: new Date().toISOString(),
-        sources: [message.sourceUrl],
-        count: 1,
-        tags: []
-      };
+      (async () => {
+        const {
+          translation: translatedText,
+          transcription: wordTranscription
+        } = await translateWord(message.word);
 
-      console.log('WordBox background.js: Попытка добавить слово:', wordData); // Лог: данные для добавления
-      window.WordBoxDB.addWord(db, wordData) // Используем глобальную функцию
-        .then(updatedWord => {
-          console.log('WordBox background.js: Слово успешно добавлено/обновлено:', updatedWord); // Лог: успех добавления
-          sendResponse({
-            status: 'success',
-            word: updatedWord
+        const wordData = {
+          id: message.word.toLowerCase(), // ID всегда в нижнем регистре
+          word: message.word, // Оригинальное слово сохраняем как есть
+          translation: translatedText,
+          transcription: wordTranscription,
+          dateAdded: new Date().toISOString(),
+          dateLastSeen: new Date().toISOString(),
+          sources: [message.sourceUrl],
+          count: 1,
+          tags: []
+        };
+
+        console.log('WordBox background.js: Попытка добавить слово в основной словарь:', wordData);
+        window.WordBoxDB.addWord(db, wordData)
+          .then(updatedWord => {
+            console.log('WordBox background.js: Слово успешно добавлено/обновлено:', updatedWord);
+            sendResponse({
+              status: 'success',
+              word: updatedWord
+            });
+          })
+          .catch(error => {
+            console.error('WordBox background.js: Ошибка при добавлении слова:', error);
+            sendResponse({
+              status: 'error',
+              message: error.message
+            });
           });
-        })
-        .catch(error => {
-          console.error('WordBox background.js: Ошибка при добавлении слова:', error); // Лог: ошибка добавления
-          sendResponse({
-            status: 'error',
-            message: error.message
-          });
-        });
-      return true; // Важно вернуть true для асинхронной отправки ответа
+      })();
+      return true;
 
     case 'getAllWords':
-      console.log('WordBox background.js: Запрос всех слов.'); // Лог: запрос всех слов
-      window.WordBoxDB.getAllWords(db) // Используем глобальную функцию
+      console.log('WordBox background.js: Запрос всех слов.');
+      window.WordBoxDB.getAllWords(db)
         .then(words => {
-          console.log('WordBox background.js: Получены слова:', words); // Лог: полученные слова
+          console.log('WordBox background.js: Получены слова:', words);
           sendResponse({
             status: 'success',
             words: words
           });
         })
         .catch(error => {
-          console.error('WordBox background.js: Ошибка при получении всех слов:', error); // Лог: ошибка получения слов
+          console.error('WordBox background.js: Ошибка при получении всех слов:', error);
           sendResponse({
             status: 'error',
             message: error.message
@@ -95,16 +149,16 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
 
     case 'deleteWord':
-      console.log('WordBox background.js: Запрос на удаление слова с ID:', message.wordId); // Лог: запрос на удаление
-      window.WordBoxDB.deleteWord(db, message.wordId) // Используем глобальную функцию
+      console.log('WordBox background.js: Запрос на удаление слова с ID:', message.wordId);
+      window.WordBoxDB.deleteWord(db, message.wordId)
         .then(() => {
-          console.log(`WordBox background.js: Слово с ID ${message.wordId} успешно удалено.`); // Лог: успех удаления
+          console.log(`WordBox background.js: Слово с ID ${message.wordId} успешно удалено.`);
           sendResponse({
             status: 'success'
           });
         })
         .catch(error => {
-          console.error('WordBox background.js: Ошибка при удалении слова:', error); // Лог: ошибка удаления
+          console.error('WordBox background.js: Ошибка при удалении слова:', error);
           sendResponse({
             status: 'error',
             message: error.message
@@ -114,11 +168,10 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     default:
       console.warn('WordBox background.js: Неизвестное действие:', message.action);
-      return false; // Для неизвестных действий
+      return false;
   }
 });
 
-// Обработка клика по иконке плагина (если нужна дополнительная логика перед открытием popup)
 browser.browserAction.onClicked.addListener(() => {
   console.log('WordBox background.js: Browser action clicked. Popup will open.');
 });
