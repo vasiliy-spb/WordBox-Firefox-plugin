@@ -31,7 +31,12 @@ async function displayWords() {
             ${word.transcription ? `<span class="transcription">[${word.transcription}]</span>` : ''}
             ${Array.isArray(word.translation) && word.translation.length > 0 ? `<span class="translation">${word.translation.join(', ')}</span>` : ''}
           </div>
-          <button class="delete-button" data-id="${word.id}">×</button>
+          <button class="delete-button" data-id="${word.id}">
+            <!-- SVG ИКОНКА КРЕСТИКА -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
         `;
         wordListContainer.appendChild(wordElement);
       });
@@ -40,14 +45,23 @@ async function displayWords() {
       wordListContainer.querySelectorAll('.delete-button').forEach(button => {
         button.addEventListener('click', async (event) => {
           const wordIdToDelete = event.target.dataset.id;
-          if (confirm(`Вы уверены, что хотите удалить слово "${wordIdToDelete}"?`)) {
+          // Если клик был по SVG внутри кнопки, найдем родительскую кнопку
+          let targetButton = event.target;
+          while (targetButton && !targetButton.classList.contains('delete-button')) {
+            targetButton = targetButton.parentNode;
+          }
+          if (!targetButton) return; // Если не нашли кнопку, выходим
+
+          const actualWordIdToDelete = targetButton.dataset.id; // Используем dataset из кнопки
+
+          if (confirm(`Вы уверены, что хотите удалить слово "${actualWordIdToDelete}"?`)) {
             try {
               const deleteResponse = await browser.runtime.sendMessage({
                 action: 'deleteWord',
-                wordId: wordIdToDelete
+                wordId: actualWordIdToDelete
               });
               if (deleteResponse.status === 'success') {
-                console.log('Word deleted successfully:', wordIdToDelete);
+                console.log('Word deleted successfully:', actualWordIdToDelete);
                 displayWords(); // Обновляем список после удаления
               } else {
                 console.error('Error deleting word:', deleteResponse.message);

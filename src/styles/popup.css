@@ -43,7 +43,7 @@ h1 {
 
 .word-content {
     flex-grow: 1; /* Позволяет содержимому слова занимать все доступное пространство */
-    line-height: 1.2; /* УМЕНЬШЕНО: Межстрочный интервал для всего блока контента */
+    line-height: 1.2; /* Межстрочный интервал для всего блока контента */
 }
 
 .word-item strong {
@@ -52,14 +52,14 @@ h1 {
     color: #555;
     word-break: break-all; /* Разрывать длинные слова */
     display: block;
-    line-height: 1.2; /* УМЕНЬШЕНО: Межстрочный интервал для самого слова */
+    line-height: 1.2; /* Межстрочный интервал для самого слова */
 }
 
 .word-item span {
     font-size: 0.9em; /* Чуть меньше размер для транскрипции и перевода */
     color: #777;
     display: block; /* Каждая часть на новой строке */
-    line-height: 1.2; /* УМЕНЬШЕНО: Межстрочный интервал для транскрипции и перевода */
+    line-height: 1.2; /* Межстрочный интервал для транскрипции и перевода */
     margin-top: 2px; /* Небольшой отступ сверху для транскрипции и перевода */
 }
 
@@ -81,7 +81,7 @@ h1 {
     top: 5px; /* Отступ сверху */
     right: 5px; /* Отступ справа */
     background-color: #dc3545; /* Красный цвет */
-    color: white;
+    color: white; /* Цвет для SVG fill */
     border: none;
     border-radius: 50%; /* Делаем кнопку круглой */
     width: 20px; /* Ширина */
@@ -89,17 +89,25 @@ h1 {
     display: flex; /* Используем flexbox для центрирования содержимого */
     align-items: center; /* Центрирование по вертикали */
     justify-content: center; /* Центрирование по горизонтали */
-    font-size: 1.2em; /* Размер крестика */
     cursor: pointer;
-    line-height: 1; /* Убираем лишний интервал у крестика */
     padding: 0; /* Убираем внутренние отступы */
     box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* Небольшая тень */
     transition: background-color 0.2s ease; /* Плавный переход цвета */
+    /* transform: translateY(-1px); */ /* УДАЛЕНО: Больше не нужно, SVG будет центрироваться лучше */
 }
 
 .delete-button:hover {
     background-color: #c82333;
 }
+
+/* Стили для SVG внутри кнопки удаления */
+.delete-button svg {
+    width: 14px; /* Размер SVG-крестика */
+    height: 14px;
+    display: block; /* Убираем лишние отступы */
+    /* fill: currentColor; */ /* Уже установлено в HTML, но можно переопределить здесь */
+}
+
 
 #exportButton {
     display: flex;
