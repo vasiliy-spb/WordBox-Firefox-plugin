@@ -6,14 +6,40 @@
     <link rel="stylesheet" href="src/styles/popup.css">
 </head>
 <body>
-    <h1>Мой словарь</h1>
+    <div class="header">
+        <h1>Мой словарь</h1>
+        <button id="themeToggle" class="theme-toggle-button" aria-label="Переключить тему">
+            <!-- Feather Icon: Moon -->
+            <svg class="theme-icon moon-icon-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <!-- Feather Icon: Sun -->
+            <svg class="theme-icon sun-icon-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+        </button>
+    </div>
     <div id="wordList">
+        <!-- Слова будут добавлены сюда JavaScript-ом -->
         <p>Загрузка слов...</p>
     </div>
     <button id="exportButton">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.11 0 2-.89 2-2V5a2 2 0 0 0-2-2m-2.41 12.71L12 11.12l-4.59 4.59L6 14.29l6-6l6 6z"/></svg>
+        <!-- Feather Icon: Upload (для экспорта) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
         Экспорт в CSV
     </button>
-    <script type="module" src="src/popup.js"></script>
+    <script src="src/popup.js"></script>
 </body>
 </html>

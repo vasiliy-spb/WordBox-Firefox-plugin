@@ -1,40 +1,82 @@
 /* src/styles/popup.css */
 
+/* Определение CSS-переменных для светлой темы по умолчанию */
+:root {
+    --bg-color: #f9f9f9;
+    --text-color: #333;
+    --card-bg-color: #fff;
+    --border-color: #ddd;
+    --header-color: #0056b3;
+    --delete-btn-bg: #dc3545;
+    --delete-btn-hover-bg: #c82333;
+    --export-btn-bg: #007bff;
+    --export-btn-hover-bg: #0056b3;
+    --transcription-color: #999;
+    --translation-color: #333;
+    --word-item-border: #eee;
+}
+
+/* Стили для тёмной темы */
+body.dark-theme {
+    --bg-color: #2c2c2c;
+    --text-color: #e0e0e0;
+    --card-bg-color: #3a3a3a;
+    --border-color: #555;
+    --header-color: #66aaff; /* Более светлый синий для контраста */
+    --delete-btn-bg: #e74c3c; /* Немного ярче для тёмного фона */
+    --delete-btn-hover-bg: #c0392b;
+    --export-btn-bg: #4a90e2; /* Более светлый синий */
+    --export-btn-hover-bg: #357bd8;
+    --transcription-color: #b0b0b0; /* Светлее для тёмного фона */
+    --translation-color: #f0f0f0; /* Светлее для тёмного фона */
+    --word-item-border: #444;
+}
+
+
 body {
     font-family: Arial, sans-serif;
-    width: 300px; /* Ширина окна плагина */
+    width: 300px;
     padding: 15px;
-    background-color: #f9f9f9;
-    color: #333;
+    background-color: var(--bg-color); /* Используем переменную */
+    color: var(--text-color); /* Используем переменную */
     margin: 0;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Плавный переход темы */
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
 }
 
 h1 {
     font-size: 1.2em;
-    margin-top: 0;
-    margin-bottom: 15px;
-    color: #0056b3;
+    margin: 0; /* Убираем стандартные отступы */
+    color: var(--header-color); /* Используем переменную */
     text-align: center;
+    flex-grow: 1; /* Позволяет заголовку занимать оставшееся пространство */
 }
 
 #wordList {
-    max-height: 300px; /* Максимальная высота списка слов */
-    overflow-y: auto; /* Прокрутка, если слов много */
-    border: 1px solid #ddd;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color); /* Используем переменную */
     border-radius: 4px;
-    background-color: #fff;
+    background-color: var(--card-bg-color); /* Используем переменную */
     padding: 10px;
     margin-bottom: 15px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .word-item {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* Выравниваем элементы по верху */
+    align-items: flex-start;
     padding: 8px 5px;
-    border-bottom: 1px dashed #eee;
-    position: relative; /* Для абсолютного позиционирования кнопки удаления */
-    padding-right: 30px; /* Отступ справа, чтобы кнопка не перекрывала текст */
+    border-bottom: 1px dashed var(--word-item-border); /* Используем переменную */
+    position: relative;
+    padding-right: 30px;
 }
 
 .word-item:last-child {
@@ -42,72 +84,68 @@ h1 {
 }
 
 .word-content {
-    flex-grow: 1; /* Позволяет содержимому слова занимать все доступное пространство */
-    line-height: 1.2; /* Межстрочный интервал для всего блока контента */
+    flex-grow: 1;
+    line-height: 1.2;
 }
 
 .word-item strong {
     font-size: 1em;
     font-weight: bold;
-    color: #555;
-    word-break: break-all; /* Разрывать длинные слова */
+    color: var(--text-color); /* Используем переменную */
+    word-break: break-all;
     display: block;
-    line-height: 1.2; /* Межстрочный интервал для самого слова */
+    line-height: 1.2;
 }
 
 .word-item span {
-    font-size: 0.9em; /* Чуть меньше размер для транскрипции и перевода */
-    color: #777;
-    display: block; /* Каждая часть на новой строке */
-    line-height: 1.2; /* Межстрочный интервал для транскрипции и перевода */
-    margin-top: 2px; /* Небольшой отступ сверху для транскрипции и перевода */
+    font-size: 0.9em;
+    color: var(--text-color); /* Используем переменную */
+    display: block;
+    line-height: 1.2;
+    margin-top: 2px;
 }
 
-/* Стили для транскрипции, чтобы она была в квадратных скобках */
 .word-item span.transcription {
-    font-family: 'Segoe UI Mono', 'Consolas', monospace; /* Моноширинный шрифт для транскрипции */
-    color: #999; /* Чуть светлее цвет */
+    font-family: 'Segoe UI Mono', 'Consolas', monospace;
+    color: var(--transcription-color); /* Используем переменную */
 }
 
-/* Стили для перевода */
 .word-item span.translation {
-    color: #333; /* Более темный цвет для перевода */
-    font-style: italic; /* Курсив для перевода */
+    color: var(--translation-color); /* Используем переменную */
+    font-style: italic;
 }
 
 
 .delete-button {
-    position: absolute; /* Абсолютное позиционирование */
-    top: 5px; /* Отступ сверху */
-    right: 5px; /* Отступ справа */
-    background-color: #dc3545; /* Красный цвет */
-    color: white; /* Цвет для SVG fill */
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: var(--delete-btn-bg); /* Используем переменную */
+    color: white; /* Цвет для SVG stroke */
     border: none;
-    border-radius: 50%; /* Делаем кнопку круглой */
-    width: 20px; /* Ширина */
-    height: 20px; /* Высота */
-    display: flex; /* Используем flexbox для центрирования содержимого */
-    align-items: center; /* Центрирование по вертикали */
-    justify-content: center; /* Центрирование по горизонтали */
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    padding: 0; /* Убираем внутренние отступы */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* Небольшая тень */
-    transition: background-color 0.2s ease; /* Плавный переход цвета */
-    /* transform: translateY(-1px); */ /* УДАЛЕНО: Больше не нужно, SVG будет центрироваться лучше */
+    padding: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: background-color 0.2s ease;
 }
 
 .delete-button:hover {
-    background-color: #c82333;
+    background-color: var(--delete-btn-hover-bg); /* Используем переменную */
 }
 
-/* Стили для SVG внутри кнопки удаления */
 .delete-button svg {
-    width: 14px; /* Размер SVG-крестика */
+    width: 14px;
     height: 14px;
-    display: block; /* Убираем лишние отступы */
-    /* fill: currentColor; */ /* Уже установлено в HTML, но можно переопределить здесь */
+    /* fill: currentColor; */ /* Удалено, так как Feather Icons используют stroke */
+    stroke: currentColor; /* Указываем, что цвет обводки берется из color родителя */
+    display: block;
 }
-
 
 #exportButton {
     display: flex;
@@ -115,22 +153,71 @@ h1 {
     justify-content: center;
     width: 100%;
     padding: 10px;
-    background-color: #007bff; /* Синий цвет */
+    background-color: var(--export-btn-bg); /* Используем переменную */
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 1em;
-    box-sizing: border-box; /* Учитываем padding в ширине */
+    box-sizing: border-box;
+    transition: background-color 0.2s ease;
 }
 
 #exportButton:hover {
-    background-color: #0056b3;
+    background-color: var(--export-btn-hover-bg); /* Используем переменную */
 }
 
 #exportButton svg {
-    fill: white;
+    fill: white; /* Для иконки экспорта, которая использует fill */
     width: 18px;
     height: 18px;
     margin-right: 8px;
+}
+
+/* Стили для кнопки переключения темы */
+.theme-toggle-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    color: var(--text-color); /* Цвет иконки */
+}
+
+.theme-toggle-button:hover {
+    background-color: rgba(0,0,0,0.1); /* Легкий фон при наведении */
+}
+
+body.dark-theme .theme-toggle-button:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* Новые правила для отдельных SVG-иконок */
+.theme-icon {
+    width: 20px;
+    height: 20px;
+    /* fill: currentColor; */ /* Удалено, так как Feather Icons используют stroke */
+    stroke: currentColor; /* Указываем, что цвет обводки берется из color родителя */
+}
+
+/* ЕСЛИ ТЕМА СВЕТЛАЯ (ПО УМОЛЧАНИЮ), ПОКАЗЫВАЕМ ЛУНУ */
+.sun-icon-svg {
+    display: none; /* Скрываем солнце */
+}
+
+.moon-icon-svg {
+    display: block; /* Показываем луну */
+}
+
+/* ЕСЛИ ТЕМА ТЕМНАЯ, ПОКАЗЫВАЕМ СОЛНЦЕ */
+body.dark-theme .sun-icon-svg {
+    display: block; /* Показываем солнце в тёмной теме */
+}
+
+body.dark-theme .moon-icon-svg {
+    display: none; /* Скрываем луну в тёмной теме */
 }

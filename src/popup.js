@@ -32,9 +32,11 @@ async function displayWords() {
             ${Array.isArray(word.translation) && word.translation.length > 0 ? `<span class="translation">${word.translation.join(', ')}</span>` : ''}
           </div>
           <button class="delete-button" data-id="${word.id}">
-            <!-- SVG ИКОНКА КРЕСТИКА -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            <!-- Feather Icon: X-Circle (для удаления) -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
             </svg>
           </button>
         `;
@@ -144,11 +146,47 @@ async function exportToCsv() {
   }
 }
 
+// --- Логика переключения темы ---
+const THEME_KEY = 'wordbox_theme'; // Ключ для хранения темы в localStorage
+const DARK_THEME_CLASS = 'dark-theme'; // Класс для тёмной темы
 
-// Запускаем отображение слов при загрузке попапа
+function applyTheme(theme) {
+    const body = document.body;
+    body.classList.toggle(DARK_THEME_CLASS, theme === 'dark'); // Добавляем/удаляем класс
+
+    // Обновляем видимость отдельных SVG-иконок
+    const sunIconSvg = document.querySelector('.sun-icon-svg');
+    const moonIconSvg = document.querySelector('.moon-icon-svg');
+
+    if (sunIconSvg && moonIconSvg) {
+        // ЕСЛИ ТЕМА СВЕТЛАЯ, ПОКАЗЫВАЕМ ЛУНУ (предлагаем перейти на темную)
+        sunIconSvg.style.display = theme === 'light' ? 'none' : 'block'; // Скрываем солнце в светлой, показываем в темной
+        moonIconSvg.style.display = theme === 'light' ? 'block' : 'none'; // Показываем луну в светлой, скрываем в темной
+    }
+}
+
+function toggleTheme() {
+    const currentTheme = localStorage.getItem(THEME_KEY) || 'light';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    localStorage.setItem(THEME_KEY, newTheme);
+    applyTheme(newTheme);
+    console.log(`WordBox popup.js: Тема переключена на: ${newTheme}`);
+}
+
+// Запускаем отображение слов и инициализируем тему при загрузке попапа
 document.addEventListener('DOMContentLoaded', () => {
   displayWords();
   document.getElementById('exportButton').addEventListener('click', exportToCsv);
+
+  // Инициализация темы при загрузке
+  const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+  applyTheme(savedTheme);
+
+  // Обработчик для кнопки переключения темы
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+      themeToggle.addEventListener('click', toggleTheme);
+  }
 });
 
 console.log('WordBox popup.js loaded.');
