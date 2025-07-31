@@ -139,10 +139,16 @@ async function displayWords() {
 
         // Добавляем обработчик для Enter, чтобы он не создавал новую строку, а снимал фокус
         field.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault(); // Предотвращаем вставку новой строки
-                this.blur(); // Снимаем фокус с поля, что вызовет событие 'blur' и сохранение
+          if (event.key === 'Enter') {
+            if (event.shiftKey) {
+                // Если Shift + Enter, позволяем новую строку
+                // Ничего не делаем, браузер вставит новую строку по умолчанию
+            } else {
+                // Если просто Enter, предотвращаем вставку новой строки и снимаем фокус
+                event.preventDefault(); 
+                this.blur(); 
             }
+        }
         });
       });
 
