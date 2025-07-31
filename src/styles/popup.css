@@ -1,82 +1,129 @@
 /* src/styles/popup.css */
 
-/* Определение CSS-переменных для светлой темы по умолчанию */
-:root {
-    --bg-color: #f9f9f9;
-    --text-color: #333;
-    --card-bg-color: #fff;
-    --border-color: #ddd;
-    --header-color: #0056b3;
-    --delete-icon-color: #dc3545; /* Красный цвет для иконки удаления */
-    --delete-icon-hover-bg: rgba(220, 53, 69, 0.1); /* Прозрачный красный фон при наведении */
-    --export-btn-bg: #007bff;
-    --export-btn-hover-bg: #0056b3;
-    --transcription-color: #999;
-    --translation-color: #333;
-    --word-item-border: #eee;
-}
-
-/* Стили для тёмной темы */
-body.dark-theme {
-    --bg-color: #2c2c2c;
-    --text-color: #e0e0e0;
-    --card-bg-color: #3a3a3a;
-    --border-color: #555;
-    --header-color: #66aaff; /* Более светлый синий для контраста */
-    --delete-icon-color: #e74c3c; /* Немного ярче красный для тёмного фона */
-    --delete-icon-hover-bg: rgba(231, 76, 60, 0.15); /* Прозрачный красный фон при наведении */
-    --export-btn-bg: #4a90e2; /* Более светлый синий */
-    --export-btn-hover-bg: #357bd8;
-    --transcription-color: #b0b0b0; /* Светлее для тёмного фона */
-    --translation-color: #f0f0f0; /* Светлее для тёмного фона */
-    --word-item-border: #444;
-}
-
-
 body {
-    font-family: Arial, sans-serif;
-    width: 300px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 350px;
     padding: 15px;
-    background-color: var(--bg-color); /* Используем переменную */
-    color: var(--text-color); /* Используем переменную */
-    margin: 0;
-    transition: background-color 0.3s ease, color 0.3s ease; /* Плавный переход темы */
+    background-color: #f4f7f6;
+    color: #333;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    box-sizing: border-box; /* Важно для корректного расчета ширины */
+}
+
+body.dark-theme {
+    background-color: #2b2b2b;
+    color: #f5f5f5;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 h1 {
-    font-size: 1.2em;
-    margin: 0; /* Убираем стандартные отступы */
-    color: var(--header-color); /* Используем переменную */
-    text-align: center;
-    flex-grow: 1; /* Позволяет заголовку занимать оставшееся пространство */
+    font-size: 24px;
+    color: #2c3e50;
+    margin: 0;
+    transition: color 0.3s ease;
 }
 
+body.dark-theme h1 {
+    color: #e0e0e0;
+}
+
+#themeToggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+}
+
+#themeToggle:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+body.dark-theme #themeToggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-icon {
+    width: 24px;
+    height: 24px;
+    stroke: #555;
+    transition: stroke 0.3s ease;
+}
+
+body.dark-theme .theme-icon {
+    stroke: #ccc;
+}
+
+.moon-icon-svg {
+    display: block;
+}
+
+.sun-icon-svg {
+    display: none;
+}
+
+body.dark-theme .moon-icon-svg {
+    display: none;
+}
+
+body.dark-theme .sun-icon-svg {
+    display: block;
+}
+
+
 #wordList {
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid var(--border-color); /* Используем переменную */
-    border-radius: 4px;
-    background-color: var(--card-bg-color); /* Используем переменную */
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    max-height: 400px; /* Ограничиваем высоту списка, чтобы он был прокручиваемым */
+    overflow-y: auto; /* Добавляем прокрутку, если содержимое превышает max-height */
+    background-color: #ffffff;
     padding: 10px;
-    margin-bottom: 15px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
     transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+body.dark-theme #wordList {
+    background-color: #3c3c3c;
+    border-color: #555;
+}
+
+#wordList p {
+    text-align: center;
+    color: #666;
+    padding: 10px;
+    transition: color 0.3s ease;
+}
+
+body.dark-theme #wordList p {
+    color: #bbb;
 }
 
 .word-item {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    padding: 8px 5px;
-    border-bottom: 1px dashed var(--word-item-border); /* Используем переменную */
-    position: relative;
-    padding-right: 30px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed #eee;
+    font-size: 15px;
+    line-height: 1.4;
+    transition: background-color 0.2s ease;
+}
+
+body.dark-theme .word-item {
+    border-color: #444;
 }
 
 .word-item:last-child {
@@ -85,67 +132,115 @@ h1 {
 
 .word-content {
     flex-grow: 1;
-    line-height: 1.2;
+    display: flex;
+    flex-direction: column; /* Размещаем элементы в столбец */
+    gap: 2px; /* Небольшой зазор между полями */
+    margin-right: 10px; /* Отступ от кнопки удаления */
 }
 
-.word-item strong {
-    font-size: 1em;
+/* Стили для редактируемых полей */
+.editable {
+    padding: 2px 5px;
+    border: 1px solid transparent; /* Прозрачная рамка по умолчанию */
+    border-radius: 3px;
+    cursor: pointer;
+    white-space: pre-wrap; /* Сохраняет пробелы и переводы строк */
+    word-wrap: break-word; /* Перенос слов */
+    min-height: 1.4em; /* Минимальная высота, чтобы не схлопывалось */
+    display: block; /* Важно для auto-высоты */
+    box-sizing: border-box;
+    overflow: hidden; /* Скрываем полосы прокрутки, если они все-таки появятся */
+    resize: none; /* Отключаем возможность ручного изменения размера */
+}
+
+.editable:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-color: #ddd;
+}
+
+body.dark-theme .editable:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: #666;
+}
+
+.editable.editing {
+    background-color: #fff;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    outline: none; /* Убираем стандартную обводку фокуса */
+    color: #333; /* Цвет текста при редактировании */
+    min-height: auto; /* Снимаем минимальную высоту при редактировании */
+    height: auto; /* Автоматическая высота */
+}
+
+body.dark-theme .editable.editing {
+    background-color: #212121;
+    color: #f5f5f5;
+    border-color: #66b3ff;
+    box-shadow: 0 0 0 2px rgba(102, 179, 255, 0.3);
+}
+
+.editable.word {
     font-weight: bold;
-    color: var(--text-color); /* Используем переменную */
-    word-break: break-all;
-    display: block;
-    line-height: 1.2;
+    color: #2c3e50;
+    font-size: 16px;
 }
 
-.word-item span {
-    font-size: 0.9em;
-    color: var(--text-color); /* Используем переменную */
-    display: block;
-    line-height: 1.2;
-    margin-top: 2px;
+body.dark-theme .editable.word {
+    color: #e0e0e0;
 }
 
-.word-item span.transcription {
-    font-family: 'Segoe UI Mono', 'Consolas', monospace;
-    color: var(--transcription-color); /* Используем переменную */
-}
-
-.word-item span.translation {
-    color: var(--translation-color); /* Используем переменную */
+.editable.transcription {
     font-style: italic;
+    color: #888;
+}
+
+body.dark-theme .editable.transcription {
+    color: #bbb;
+}
+
+.editable.translation {
+    color: #555;
+    flex-grow: 1; /* Позволяет переводу занимать больше места */
+}
+
+body.dark-theme .editable.translation {
+    color: #ddd;
 }
 
 
 .delete-button {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: none; /* УБРАЛИ: Нет красного фона */
-    border: none; /* УБРАЛИ: Нет границы */
-    border-radius: 50%; /* добавил скругления, чтобы не было визуальных артефактов */
-    width: 18px; /* уменьшил размер кнопки */
-    height: 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #dc3545;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, transform 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    padding: 0;
-    box-shadow: none; /* УБРАЛИ: Нет тени, т.к. нет фона */
-    transition: background-color 0.2s ease, color 0.2s ease; /* Плавный переход для фона и цвета */
-    color: var(--delete-icon-color); /* ЦВЕТ ИКОНКИ: будет красный */
+    flex-shrink: 0; /* Чтобы кнопка не сжималась */
 }
 
 .delete-button:hover {
-    background-color: var(--delete-icon-hover-bg); /* Прозрачный красный фон при наведении */
-    border-radius: 50%; /* Делаем круглым при наведении для визуального эффекта */
+    background-color: rgba(220, 53, 69, 0.1);
+    transform: scale(1.1);
+}
+
+body.dark-theme .delete-button {
+    color: #ff6b6b;
+}
+
+body.dark-theme .delete-button:hover {
+    background-color: rgba(255, 107, 107, 0.1);
 }
 
 .delete-button svg {
-    width: 100%; /* SVG заполняет всю кнопку */
-    height: 100%;
-    stroke: currentColor; /* Цвет обводки SVG берется из color родителя */
-    fill: none; /* У Feather Icons fill: none по умолчанию */
-    display: block;
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
 }
 
 #exportButton {
@@ -153,72 +248,42 @@ h1 {
     align-items: center;
     justify-content: center;
     width: 100%;
-    padding: 10px;
-    background-color: var(--export-btn-bg); /* Используем переменную */
+    padding: 10px 15px;
+    background-color: #007bff;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
+    font-size: 16px;
     cursor: pointer;
-    font-size: 1em;
-    box-sizing: border-box;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    gap: 8px; /* Расстояние между иконкой и текстом */
 }
 
 #exportButton:hover {
-    background-color: var(--export-btn-hover-bg); /* Используем переменную */
+    background-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+#exportButton:active {
+    background-color: #004085;
+    transform: translateY(0);
+}
+
+body.dark-theme #exportButton {
+    background-color: #4CAF50; /* Green in dark theme */
+}
+
+body.dark-theme #exportButton:hover {
+    background-color: #45a049;
+}
+
+body.dark-theme #exportButton:active {
+    background-color: #3e8e41;
 }
 
 #exportButton svg {
-    fill: white; /* Для иконки экспорта, которая использует fill */
-    width: 18px;
-    height: 18px;
-    margin-right: 8px;
-}
-
-/* Стили для кнопки переключения темы */
-.theme-toggle-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
-    color: var(--text-color); /* Цвет иконки */
-}
-
-.theme-toggle-button:hover {
-    background-color: rgba(0,0,0,0.1); /* Легкий фон при наведении */
-}
-
-body.dark-theme .theme-toggle-button:hover {
-    background-color: rgba(255,255,255,0.1);
-}
-
-/* Новые правила для отдельных SVG-иконок */
-.theme-icon {
     width: 20px;
     height: 20px;
-    stroke: currentColor; /* Цвет обводки берется из color родителя */
-    fill: none; /* Feather Icons обычно не имеют fill */
-}
-
-/* ЕСЛИ ТЕМА СВЕТЛАЯ (ПО УМОЛЧАНИЮ), ПОКАЗЫВАЕМ ЛУНУ */
-.sun-icon-svg {
-    display: none; /* Скрываем солнце */
-}
-
-.moon-icon-svg {
-    display: block; /* Показываем луну */
-}
-
-/* ЕСЛИ ТЕМА ТЕМНАЯ, ПОКАЗЫВАЕМ СОЛНЦЕ */
-body.dark-theme .sun-icon-svg {
-    display: block; /* Показываем солнце в тёмной теме */
-}
-
-body.dark-theme .moon-icon-svg {
-    display: none; /* Скрываем луну в тёмной теме */
+    stroke: white;
+    fill: none;
 }

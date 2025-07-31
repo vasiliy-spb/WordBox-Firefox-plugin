@@ -27,16 +27,15 @@ async function displayWords() {
         // Слово отображаем в нижнем регистре (word.id)
         wordElement.innerHTML = `
           <div class="word-content">
-            <strong>${word.id}</strong>
-            ${word.transcription ? `<span class="transcription">[${word.transcription}]</span>` : ''}
-            ${Array.isArray(word.translation) && word.translation.length > 0 ? `<span class="translation">${word.translation.join(', ')}</span>` : ''}
+            <span class="editable word" data-field="word" data-id="${word.id}">${word.word}</span>
+            <span class="editable transcription" data-field="transcription" data-id="${word.id}">${word.transcription ? `[${word.transcription}]` : ''}</span>
+            <span class="editable translation" data-field="translation" data-id="${word.id}">${Array.isArray(word.translation) && word.translation.length > 0 ? word.translation.join(', ') : ''}</span>
           </div>
           <button class="delete-button" data-id="${word.id}">
-            <!-- Feather Icon: X-Circle (для удаления) -->
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="15" y1="9" x2="9" y2="15"></line>
-                <line x1="9" y1="9" x2="15" y2="15"></line>
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
             </svg>
           </button>
         `;
@@ -46,15 +45,13 @@ async function displayWords() {
       // Добавляем обработчики событий для кнопок удаления
       wordListContainer.querySelectorAll('.delete-button').forEach(button => {
         button.addEventListener('click', async (event) => {
-          const wordIdToDelete = event.target.dataset.id;
-          // Если клик был по SVG внутри кнопки, найдем родительскую кнопку
           let targetButton = event.target;
           while (targetButton && !targetButton.classList.contains('delete-button')) {
             targetButton = targetButton.parentNode;
           }
-          if (!targetButton) return; // Если не нашли кнопку, выходим
+          if (!targetButton) return;
 
-          const actualWordIdToDelete = targetButton.dataset.id; // Используем dataset из кнопки
+          const actualWordIdToDelete = targetButton.dataset.id;
 
           if (confirm(`Вы уверены, что хотите удалить слово "${actualWordIdToDelete}"?`)) {
             try {
@@ -72,6 +69,80 @@ async function displayWords() {
               console.error('Error sending delete message:', error);
             }
           }
+        });
+      });
+
+      // Добавляем обработчики событий для редактируемых полей
+      wordListContainer.querySelectorAll('.editable').forEach(field => {
+        field.addEventListener('click', function() {
+          if (this.contentEditable !== 'true') {
+            const currentText = this.textContent;
+            this.textContent = currentText.replace(/^\[|\]$/g, ''); // Удаляем квадратные скобки для транскрипции
+
+            this.contentEditable = 'true';
+            this.focus();
+            
+            // Устанавливаем курсор в конец текста
+            const range = document.createRange();
+            const selection = window.getSelection();
+            range.selectNodeContents(this);
+            range.collapse(false); // Сворачиваем диапазон в конец
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            this.classList.add('editing');
+            this.dataset.originalText = currentText; // Сохраняем оригинальный текст
+          }
+        });
+
+        field.addEventListener('blur', async function() {
+          this.contentEditable = 'false';
+          this.classList.remove('editing');
+          const newText = this.textContent.trim();
+          const wordId = this.dataset.id;
+          const fieldName = this.dataset.field;
+          const originalText = this.dataset.originalText;
+
+          // Восстанавливаем скобки для транскрипции, если поле - транскрипция
+          if (fieldName === 'transcription' && newText && !newText.startsWith('[') && !newText.endsWith(']')) {
+              this.textContent = `[${newText}]`;
+          } else {
+              this.textContent = newText;
+          }
+
+          // Если текст не изменился, не отправляем запрос
+          if (this.textContent === originalText) {
+            return;
+          }
+
+          // Обновляем слово в IndexedDB
+          try {
+            const updateResponse = await browser.runtime.sendMessage({
+              action: 'updateWord',
+              wordId: wordId,
+              field: fieldName,
+              value: newText
+            });
+
+            if (updateResponse.status === 'success') {
+              console.log(`Слово "${wordId}", поле "${fieldName}" обновлено.`);
+            } else {
+              console.error(`Ошибка при обновлении слова "${wordId}", поле "${fieldName}":`, updateResponse.message);
+              // Можно откатить изменения в UI, если обновление не удалось
+              this.textContent = originalText; 
+            }
+          } catch (error) {
+            console.error('Ошибка при отправке сообщения об обновлении:', error);
+            this.textContent = originalText; 
+          }
+        });
+
+        // Добавляем обработчик для Enter, чтобы он не создавал новую строку, а снимал фокус
+        field.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Предотвращаем вставку новой строки
+                this.blur(); // Снимаем фокус с поля, что вызовет событие 'blur' и сохранение
+            }
         });
       });
 
@@ -174,18 +245,40 @@ function toggleTheme() {
 }
 
 // Запускаем отображение слов и инициализируем тему при загрузке попапа
-document.addEventListener('DOMContentLoaded', () => {
-  displayWords();
-  document.getElementById('exportButton').addEventListener('click', exportToCsv);
+// document.addEventListener('DOMContentLoaded', () => {
+//   displayWords();
+//   document.getElementById('exportButton').addEventListener('click', exportToCsv);
 
-  // Инициализация темы при загрузке
-  const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
-  applyTheme(savedTheme);
+//   // Инициализация темы при загрузке
+//   const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+//   applyTheme(savedTheme);
 
-  // Обработчик для кнопки переключения темы
-  const themeToggle = document.getElementById('themeToggle');
-  if (themeToggle) {
-      themeToggle.addEventListener('click', toggleTheme);
+//   // Обработчик для кнопки переключения темы
+//   const themeToggle = document.getElementById('themeToggle');
+//   if (themeToggle) {
+//       themeToggle.addEventListener('click', toggleTheme);
+//   }
+// });
+
+// Вызываем displayWords при загрузке попапа
+document.addEventListener('DOMContentLoaded', displayWords);
+
+// Обработчик для кнопки экспорта
+document.getElementById('exportButton').addEventListener('click', exportToCsv);
+
+// Обработчик для кнопки переключения темы
+document.getElementById('themeToggle').addEventListener('click', () => {
+  document.body.classList.toggle('dark-theme');
+  const isDark = document.body.classList.contains('dark-theme');
+  browser.storage.local.set({
+    darkMode: isDark
+  });
+});
+
+// Загрузка сохраненной темы
+browser.storage.local.get('darkMode').then(data => {
+  if (data.darkMode) {
+    document.body.classList.add('dark-theme');
   }
 });
 

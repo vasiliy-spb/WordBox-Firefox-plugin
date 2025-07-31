@@ -1,8 +1,7 @@
 // src/lib/indexedDB.js
-
 (function() {
   const DB_NAME = 'WordBoxDB';
-  const DB_VERSION = 3; // *** УВЕЛИЧИЛИ ВЕРСИЮ БАЗЫ ДАННЫХ ***
+  const DB_VERSION = 3; // *** УВЕЛИЧИЛИ ВЕРСИЮ БАЗЫ ДАННЫХ *** [cite: 655]
   const STORE_NAME_WORDS = 'words';
 
   let db = null;
@@ -120,6 +119,58 @@
     });
   }
 
+  /**
+   * Получает слово по его уникальному ID.
+   * @param {IDBDatabase} db - Объект базы данных IndexedDB.
+   * @param {string} wordId - ID слова для получения.
+   * @returns {Promise<object|undefined>} - Промис, который разрешается объектом слова или undefined, если слово не найдено.
+   */
+  function getWord(db, wordId) {
+    return new Promise((resolve, reject) => {
+      if (!db) {
+        reject(new Error('Database not open.'));
+        return;
+      }
+      const transaction = db.transaction([STORE_NAME_WORDS], 'readonly');
+      const store = transaction.objectStore(STORE_NAME_WORDS);
+      const request = store.get(wordId);
+
+      request.onsuccess = event => {
+        resolve(event.target.result);
+      };
+      request.onerror = event => {
+        console.error('IndexedDB (getWord): Error getting word:', event.target.error);
+        reject(event.target.error);
+      };
+    });
+  }
+
+  /**
+   * Обновляет существующее слово в хранилище.
+   * @param {IDBDatabase} db - Объект базы данных IndexedDB.
+   * @param {object} wordData - Данные слова для обновления (должно содержать keyPath 'id').
+   * @returns {Promise<object>} - Промис, который разрешается с обновленным словом.
+   */
+  function putWord(db, wordData) {
+    return new Promise((resolve, reject) => {
+      if (!db) {
+        reject(new Error('Database not open.'));
+        return;
+      }
+      const transaction = db.transaction([STORE_NAME_WORDS], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME_WORDS);
+      const request = store.put(wordData); // Используем put для обновления
+
+      request.onsuccess = () => {
+        console.log('IndexedDB (putWord): Word put successfully:', wordData);
+        resolve(wordData);
+      };
+      request.onerror = event => {
+        console.error('IndexedDB (putWord): Error putting word:', event.target.error);
+        reject(event.target.error);
+      };
+    });
+  }
 
   /**
    * Получает все слова из хранилища.
@@ -166,6 +217,7 @@
       const store = transaction.objectStore(STORE_NAME_WORDS);
       const request = store.delete(wordId);
 
+
       request.onsuccess = () => {
         console.log('IndexedDB (deleteWord): Word deleted successfully:', wordId);
         resolve();
@@ -183,7 +235,9 @@
     openDatabase,
     addWord,
     getAllWords,
-    deleteWord
+    deleteWord,
+    getWord, // Добавлено
+    putWord // Добавлено
   };
 
 })();
