@@ -287,7 +287,11 @@ body.dark-theme .editable.transcription {
 
 .editable.translation {
     color: #555;
-    flex-grow: 1; /* Позволяет переводу занимать больше места */
+    flex-grow: 1; /* Чтобы перевод занимал доступное пространство */
+    margin-top: 5px; /* Небольшой отступ сверху, если слово и транскрипция выше */
+    min-height: 1.2em; /* Минимальная высота для пустых полей */
+    white-space: pre-wrap; /* ЭТО КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: сохраняет пробелы и переносы строк */
+    word-break: break-word; /* Перенос длинных слов */
 }
 
 body.dark-theme .editable.translation {

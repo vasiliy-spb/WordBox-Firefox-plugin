@@ -165,6 +165,11 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 // Обновляем соответствующее поле
                 if (field === 'translation') {
                     existingWord[field] = value.split(',').map(s => s.trim()).filter(s => s.length > 0); // Перевод может быть массивом
+
+                    // ЕСЛИ ПОЛЕ - ПЕРЕВОД, СОХРАНЯЕМ ЕГО КАК МАССИВ ИЗ ОДНОГО ЭЛЕМЕНТА,
+                    // ЧТОБЫ СОХРАНИТЬ ПЕРЕВОДЫ СТРОК
+                    // existingWord[field] = [value]; // Сохраняем как массив с одним элементом
+
                 } else {
                     existingWord[field] = value;
                 }

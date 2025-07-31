@@ -98,14 +98,22 @@ async function displayWords() {
         field.addEventListener('blur', async function() {
           this.contentEditable = 'false';
           this.classList.remove('editing');
-          const newText = this.textContent.trim();
+          const newText = this.textContent;
           const wordId = this.dataset.id;
           const fieldName = this.dataset.field;
           const originalText = this.dataset.originalText;
 
+          // // Восстанавливаем скобки для транскрипции, если поле - транскрипция
+          // if (fieldName === 'transcription' && newText && !newText.startsWith('[') && !newText.endsWith(']')) {
+          //     this.textContent = `[${newText}]`;
+          // } else {
+          //     this.textContent = newText;
+          // }
+
           // Восстанавливаем скобки для транскрипции, если поле - транскрипция
-          if (fieldName === 'transcription' && newText && !newText.startsWith('[') && !newText.endsWith(']')) {
-              this.textContent = `[${newText}]`;
+          // Используем newText.trim() для проверки транскрипции, чтобы пустые строки не превращались в []
+          if (fieldName === 'transcription' && newText.trim() && !newText.startsWith('[') && !newText.endsWith(']')) {
+            this.textContent = `[${newText.trim()}]`; // Trim для транскрипции, чтобы не было лишних пробелов
           } else {
               this.textContent = newText;
           }
