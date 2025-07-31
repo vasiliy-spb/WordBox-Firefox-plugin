@@ -258,22 +258,6 @@ function toggleTheme() {
     console.log(`WordBox popup.js: Тема переключена на: ${newTheme}`);
 }
 
-// Запускаем отображение слов и инициализируем тему при загрузке попапа
-// document.addEventListener('DOMContentLoaded', () => {
-//   displayWords();
-//   document.getElementById('exportButton').addEventListener('click', exportToCsv);
-
-//   // Инициализация темы при загрузке
-//   const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
-//   applyTheme(savedTheme);
-
-//   // Обработчик для кнопки переключения темы
-//   const themeToggle = document.getElementById('themeToggle');
-//   if (themeToggle) {
-//       themeToggle.addEventListener('click', toggleTheme);
-//   }
-// });
-
 // Вызываем displayWords при загрузке попапа
 document.addEventListener('DOMContentLoaded', displayWords);
 
