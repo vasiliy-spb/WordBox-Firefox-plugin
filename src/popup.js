@@ -23,14 +23,22 @@ async function displayWords() {
       words.forEach(word => {
         const wordElement = document.createElement('div');
         wordElement.className = 'word-item';
+
+        // НОВОЕ: Создаем HTML для тегов
+        // Убедимся, что tags - массив и не undefined. Если пустой - показываем placeholder.
+        const hasTags = Array.isArray(word.tags) && word.tags.length > 0;
+        const tagsHtml = hasTags
+            ? `<span class="editable tags" data-field="tags" data-id="${word.id}">${word.tags.map(tag => `<span class="tag-item">${tag}</span>`).join('')}</span>`
+            : `<span class="editable tags empty-tags" data-field="tags" data-id="${word.id}">Добавить теги</span>`;
+
         // Отображаем слово, транскрипцию и перевод, если они есть
-        // Слово отображаем в нижнем регистре (word.id)
+        // СДЕЛАНО: ВСТАВЛЯЕМ tagsHtml СЮДА!
         wordElement.innerHTML = `
           <div class="word-content">
             <span class="editable word" data-field="word" data-id="${word.id}">${word.word}</span>
             <span class="editable transcription" data-field="transcription" data-id="${word.id}">${word.transcription ? `[${word.transcription}]` : ''}</span>
             <span class="editable translation" data-field="translation" data-id="${word.id}">${Array.isArray(word.translation) && word.translation.length > 0 ? word.translation.join(', ') : ''}</span>
-          </div>
+            ${tagsHtml} </div>
           <button class="delete-button" data-id="${word.id}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
@@ -81,6 +89,21 @@ async function displayWords() {
 
             this.contentEditable = 'true';
             this.focus();
+
+            // Специальная обработка для поля тегов
+            if (this.dataset.field === 'tags') {
+              // Если теги пустые, то очищаем текст, чтобы placeholder не мешал редактировать
+              if (this.classList.contains('empty-tags')) {
+                  this.textContent = '';
+              } else {
+                  // Преобразуем отображаемые теги обратно в формат "тег1, тег2" для редактирования
+                  // Используем textContent, чтобы получить все теги как одну строку
+                  const tagsArray = Array.from(this.querySelectorAll('.tag-item')).map(span => span.textContent.trim());
+                  this.textContent = tagsArray.join(', ');
+              }
+            } else if (this.dataset.field === 'transcription') {
+                this.textContent = currentText.replace(/^\[|\]$/g, ''); // Удаляем квадратные скобки для транскрипции
+            }
             
             // Устанавливаем курсор в конец текста
             const range = document.createRange();
@@ -112,14 +135,58 @@ async function displayWords() {
 
           // Восстанавливаем скобки для транскрипции, если поле - транскрипция
           // Используем newText.trim() для проверки транскрипции, чтобы пустые строки не превращались в []
-          if (fieldName === 'transcription' && newText.trim() && !newText.startsWith('[') && !newText.endsWith(']')) {
-            this.textContent = `[${newText.trim()}]`; // Trim для транскрипции, чтобы не было лишних пробелов
+          // if (fieldName === 'transcription' && newText.trim() && !newText.startsWith('[') && !newText.endsWith(']')) {
+          //   this.textContent = `[${newText.trim()}]`; // Trim для транскрипции, чтобы не было лишних пробелов
+          // } else {
+          //     this.textContent = newText;
+          // }
+
+          let valueToSend; // Переменная для значения, которое будет отправлено
+
+          if (fieldName === 'transcription') {
+              if (!newText.trim()) {
+                  this.textContent = '';
+                  valueToSend = '';
+              } else if (!newText.startsWith('[') && !newText.endsWith(']')) {
+                  this.textContent = `[${newText.trim()}]`;
+                  valueToSend = newText.trim();
+              } else {
+                  this.textContent = newText.trim();
+                  valueToSend = newText.trim();
+              }
+          } else if (fieldName === 'tags') { // НОВОЕ: Обработка тегов при потере фокуса
+              const newTags = newText.split(',')
+                                      .map(tag => tag.trim())
+                                      .filter(tag => tag.length > 0);
+              
+              if (newTags.length === 0) {
+                  this.innerHTML = 'Добавить теги'; // Устанавливаем placeholder
+                  this.classList.add('empty-tags');
+                  valueToSend = []; // Отправляем пустой массив
+              } else {
+                  this.innerHTML = newTags.map(tag => `<span class="tag-item">${tag}</span>`).join('');
+                  this.classList.remove('empty-tags');
+                  valueToSend = newTags; // Отправляем массив тегов
+              }
           } else {
               this.textContent = newText;
+              valueToSend = newText;
           }
 
           // Если текст не изменился, не отправляем запрос
-          if (this.textContent === originalText) {
+          // if (this.textContent === originalText) {
+          //   return;
+          // }
+
+          // Если текст не изменился, не отправляем запрос
+          // Для тегов, сравниваем строковое представление текущих тегов с исходными
+          if (fieldName === 'tags') {
+            const currentTagsAsText = Array.from(this.querySelectorAll('.tag-item')).map(span => span.textContent.trim()).join(', ');
+            const originalTagsAsText = originalText === 'Добавить теги' ? '' : Array.from(new DOMParser().parseFromString(originalText, 'text/html').querySelectorAll('.tag-item')).map(span => span.textContent.trim()).join(', ');
+            if (currentTagsAsText === originalTagsAsText) {
+                return;
+            }
+          } else if (this.textContent === originalText) {
             return;
           }
 
@@ -129,7 +196,8 @@ async function displayWords() {
               action: 'updateWord',
               wordId: wordId,
               field: fieldName,
-              value: newText
+              // value: newText
+              value: valueToSend // Отправляем подготовленное значение
             });
 
             if (updateResponse.status === 'success') {
@@ -137,11 +205,34 @@ async function displayWords() {
             } else {
               console.error(`Ошибка при обновлении слова "${wordId}", поле "${fieldName}":`, updateResponse.message);
               // Можно откатить изменения в UI, если обновление не удалось
-              this.textContent = originalText; 
+              // this.textContent = originalText; 
+
+              // Для тегов, нужно восстановить оригинальный HTML, а не textContent
+              if (fieldName === 'tags') {
+                this.innerHTML = originalText;
+                if (originalText === 'Добавить теги') {
+                    this.classList.add('empty-tags');
+                } else {
+                    this.classList.remove('empty-tags');
+                }
+              } else {
+                  this.textContent = originalText;
+              }
             }
           } catch (error) {
             console.error('Ошибка при отправке сообщения об обновлении:', error);
-            this.textContent = originalText; 
+            // this.textContent = originalText; 
+            // Для тегов, нужно восстановить оригинальный HTML, а не textContent
+            if (fieldName === 'tags') {
+              this.innerHTML = originalText;
+              if (originalText === 'Добавить теги') {
+                  this.classList.add('empty-tags');
+              } else {
+                  this.classList.remove('empty-tags');
+              }
+            } else {
+                this.textContent = originalText;
+            }
           }
         });
 
@@ -190,19 +281,34 @@ async function exportToCsv() {
       const csvRows = [];
       csvRows.push(headers.join(',')); // Добавляем заголовки
 
+      // words.forEach(word => {
+      //   const row = headers.map(header => {
+      //     let value = word[header];
+      //     // Обработка специальных символов и массивов для CSV
+      //     if (Array.isArray(value)) {
+      //       value = value.join(';'); // Разделяем элементы массива точкой с запятой
+      //     }
+      //     if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+      //       value = `"${value.replace(/"/g, '""')}"`; // Экранирование кавычек и оборачивание в кавычки
+      //     }
+      //     return value;
+      //   });
+      //   csvRows.push(row.join(','));
+      // });
+
       words.forEach(word => {
-        const row = headers.map(header => {
-          let value = word[header];
-          // Обработка специальных символов и массивов для CSV
-          if (Array.isArray(value)) {
-            value = value.join(';'); // Разделяем элементы массива точкой с запятой
-          }
-          if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
-            value = `"${value.replace(/"/g, '""')}"`; // Экранирование кавычек и оборачивание в кавычки
-          }
-          return value;
-        });
-        csvRows.push(row.join(','));
+        const wordValue = `"${word.word.replace(/"/g, '""')}"`;
+        const transcriptionValue = `"${word.transcription ? word.transcription.replace(/"/g, '""') : ''}"`;
+        // Перевод сохраняем как есть (с запятыми, если они есть)
+        const translationValue = `"${Array.isArray(word.translation) ? word.translation.join(', ').replace(/"/g, '""') : ''}"`;
+        // НОВОЕ: Добавляем теги в CSV (разделенные точкой с запятой)
+        const tagsValue = `"${Array.isArray(word.tags) ? word.tags.join('; ').replace(/"/g, '""') : ''}"`;
+        const dateAddedValue = word.dateAdded;
+        const dateLastSeenValue = word.dateLastSeen;
+        const sourcesValue = `"${Array.isArray(word.sources) ? word.sources.join('; ').replace(/"/g, '""') : ''}"`;
+        const countValue = word.count;
+
+        csvRows.push([wordValue, translationValue, transcriptionValue, dateAddedValue, dateLastSeenValue, sourcesValue, countValue, tagsValue].join(','));
       });
 
       const csvString = csvRows.join('\n');
@@ -265,16 +371,18 @@ const addWordModal = document.getElementById('addWordModal');
 const addWordButton = document.getElementById('addWordButton');
 const closeButton = document.querySelector('.modal .close-button');
 const manualWordInput = document.getElementById('manualWordInput');
+const manualTagsInput = document.getElementById('manualTagsInput'); // НОВОЕ: поле для тегов
 const submitManualWordButton = document.getElementById('submitManualWord');
 const manualWordError = document.getElementById('manualWordError');
 
 // Открытие модального окна
 addWordButton.addEventListener('click', () => {
     addWordModal.style.display = 'flex'; // Используем flex для центрирования
-    manualWordInput.value = ''; // Очищаем поле ввода
+    manualWordInput.value = ''; // Очищаем поле ввода слова
+    manualTagsInput.value = ''; // НОВОЕ: Очищаем поле ввода тегов
     manualWordError.textContent = ''; // Очищаем сообщение об ошибке
     manualWordError.style.display = 'none'; // Скрываем сообщение об ошибке
-    manualWordInput.focus(); // Устанавливаем фокус на поле ввода
+    manualWordInput.focus(); // Устанавливаем фокус на поле ввода слова
 });
 
 // Закрытие модального окна по клику на "x"
@@ -292,6 +400,9 @@ window.addEventListener('click', (event) => {
 // Обработка отправки слова из модального окна
 submitManualWordButton.addEventListener('click', async () => {
     const word = manualWordInput.value.trim();
+    // НОВОЕ: Парсим теги
+    const tags = manualTagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+
     if (word === '') {
         manualWordError.textContent = 'Пожалуйста, введите слово.';
         manualWordError.style.display = 'block';
@@ -314,7 +425,8 @@ submitManualWordButton.addEventListener('click', async () => {
         const response = await browser.runtime.sendMessage({
             action: 'addWord',
             word: word,
-            sourceUrl: 'manual_entry' // Указываем, что это ручной ввод
+            sourceUrl: 'manual_entry', // Указываем, что это ручной ввод
+            tags: tags // НОВОЕ: Передаем теги
         });
 
         if (response.status === 'success') {
@@ -339,6 +451,12 @@ manualWordInput.addEventListener('keydown', (event) => {
         event.preventDefault(); // Предотвращаем дефолтное поведение (например, отправку формы)
         submitManualWordButton.click(); // Имитируем клик по кнопке "Добавить"
     }
+});
+manualTagsInput.addEventListener('keydown', (event) => { // НОВОЕ: Enter для поля тегов
+  if (event.key === 'Enter') {
+      event.preventDefault();
+      submitManualWordButton.click();
+  }
 });
 
 // Вызываем displayWords при загрузке попапа

@@ -14,6 +14,8 @@
     --transcription-color: #999;
     --translation-color: #333;
     --word-item-border: #eee;
+    --tag-bg-color: #e0e0e0; /* Новый цвет для фона тега */
+    --tag-text-color: #555; /* Новый цвет для текста тега */
 }
 
 /* Стили для тёмной темы */
@@ -30,6 +32,8 @@ body.dark-theme {
     --transcription-color: #b0b0b0; /* Светлее для тёмного фона */
     --translation-color: #f0f0f0; /* Светлее для тёмного фона */
     --word-item-border: #444;
+    --tag-bg-color: #555; /* Новый цвет для фона тега в тёмной теме */
+    --tag-text-color: #e0e0e0; /* Новый цвет для текста тега в тёмной теме */
 }
 
 
@@ -46,9 +50,36 @@ body {
 
 .header {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Распределяет элементы по краям */
     align-items: center;
     margin-bottom: 15px;
+}
+
+.header-actions { /* Новый класс для контейнера кнопок в заголовке */
+    display: flex;
+    /* gap: 10px; -- УДАЛЕНО: больше не нужно, так как кнопка перемещена */
+    align-items: center;
+}
+
+.header-button { /* Общие стили для кнопок в заголовке */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    color: var(--text-color);
+}
+
+.header-button:hover {
+    background-color: rgba(0,0,0,0.1);
+}
+
+body.dark-theme .header-button:hover {
+    background-color: rgba(255,255,255,0.1);
 }
 
 h1 {
@@ -86,8 +117,12 @@ h1 {
 
 .word-content {
     flex-grow: 1;
-    line-height: 1.2;
+    /* line-height: 1.2;  <-- УДАЛИТЕ ЭТУ СТРОКУ, она может вызывать проблемы */
+    display: flex; /* СДЕЛАНО: Сделать flex-контейнером */
+    flex-direction: column; /* СДЕЛАНО: Располагать элементы в колонку */
+    /* gap: 5px; <-- МОЖЕТЕ ДОБАВИТЬ ЭТО, если нужен небольшой отступ между элементами слова */
 }
+
 
 .word-item strong {
     font-size: 1em;
@@ -237,6 +272,7 @@ body.dark-theme .moon-icon-svg {
     box-sizing: border-box;
     overflow: hidden; /* Скрываем полосы прокрутки, если они все-таки появятся */
     resize: none; /* Отключаем возможность ручного изменения размера */
+    line-height: 1.2; /* СДЕЛАНО: Добавить line-height для всех editable элементов */
 }
 
 .editable:hover {
@@ -290,7 +326,7 @@ body.dark-theme .editable.transcription {
     flex-grow: 1; /* Чтобы перевод занимал доступное пространство */
     margin-top: 5px; /* Небольшой отступ сверху, если слово и транскрипция выше */
     min-height: 1.2em; /* Минимальная высота для пустых полей */
-    white-space: pre-wrap; /* сохраняет пробелы и переносы строк */
+    white-space: pre-wrap; /* Сохраняет пробелы и переносы строк */
     word-break: break-word; /* Перенос длинных слов */
 }
 
@@ -298,45 +334,67 @@ body.dark-theme .editable.translation {
     color: #ddd;
 }
 
-/* src/styles/popup.css */
-
-/* ... (существующие стили) ... */
-
-.header {
-    display: flex;
-    justify-content: space-between; /* Распределяет элементы по краям */
+/* НОВОЕ: Стили для тегов */
+.editable.tags {
+    font-size: 0.85em;
+    color: var(--tag-text-color); /* Используем переменную */
+    margin-top: 5px;
+    display: flex; /* Для корректного отображения tag-item */
+    flex-wrap: wrap; /* Разрешает перенос тегов на следующую строку */
+    gap: 5px; /* Отступ между тегами */
     align-items: center;
-    margin-bottom: 15px;
+    min-height: 1.2em; /* Минимальная высота для тегов */
 }
 
-.header-actions { /* Новый класс для контейнера кнопок в заголовке */
-    display: flex;
-    /* gap: 10px; Отступ между кнопками */
-    align-items: center;
+body.dark-theme .editable.tags {
+    color: var(--tag-text-color);
 }
 
-.header-button { /* Общие стили для кнопок в заголовке */
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
-    color: var(--text-color);
+.editable.tags.empty-tags {
+    font-style: italic;
+    color: var(--transcription-color); /* Используем переменную, чтобы совпадало с цветом транскрипции */
 }
 
-.header-button:hover {
-    background-color: rgba(0,0,0,0.1);
+body.dark-theme .editable.tags.empty-tags {
+    color: var(--transcription-color);
 }
 
-body.dark-theme .header-button:hover {
-    background-color: rgba(255,255,255,0.1);
+
+.tag-item {
+    background-color: var(--tag-bg-color); /* Используем переменную */
+    color: var(--tag-text-color); /* Используем переменную */
+    padding: 3px 8px;
+    border-radius: 12px;
+    white-space: nowrap; /* Не переносить тег внутри */
+    font-size: 0.8em;
+    display: inline-block; /* Для корректных отступов и формы */
 }
 
-/* Стили для модального окна */
+body.dark-theme .tag-item {
+    background-color: var(--tag-bg-color);
+    color: var(--tag-text-color);
+}
+
+/* При редактировании тегов */
+.editable.tags.editing {
+    /* Эти стили уже определены в .editable.editing, но убедимся, что они применяются */
+    background-color: #fff;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    outline: none;
+    color: #333;
+    display: block; /* Важно, чтобы текст не разрывался на несколько строк при редактировании */
+}
+
+body.dark-theme .editable.tags.editing {
+    background-color: #212121;
+    color: #f5f5f5;
+    border-color: #66b3ff;
+    box-shadow: 0 0 0 2px rgba(102, 179, 255, 0.3);
+}
+
+
+/* Стили для модального окна (без изменений, кроме добавления input для тегов) */
 .modal {
     display: none; /* Скрыто по умолчанию */
     position: fixed; /* Поверх всего */
@@ -379,7 +437,7 @@ body.dark-theme .header-button:hover {
 .modal-content input[type="text"] {
     width: calc(100% - 20px); /* Учитываем padding */
     padding: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 0; /* Убран лишний margin-bottom */
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background-color: var(--bg-color);

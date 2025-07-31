@@ -1,4 +1,5 @@
 // src/background.js
+
 let db = null;
 
 // Функция для инициализации IndexedDB
@@ -109,7 +110,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
           dateLastSeen: new Date().toISOString(),
           sources: [message.sourceUrl],
           count: 1,
-          tags: []
+          tags: message.tags || [] // *** Добавлено: получаем теги из сообщения или пустой массив ***
         };
 
         console.log('WordBox background.js: Попытка добавить слово в основной словарь:', wordData);
@@ -151,34 +152,50 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
 
     case 'updateWord': // *** НОВОЕ ДЕЙСТВИЕ ДЛЯ ОБНОВЛЕНИЯ СЛОВА ***
-        (async () => {
-            const { wordId, field, value } = message;
-            console.log(`WordBox background.js: Запрос на обновление слова ${wordId}, поле ${field}, значение ${value}`);
-            try {
-                // Получаем слово из базы
-                const existingWord = await window.WordBoxDB.getWord(db, wordId); // Добавим getWord в indexedDB.js
-                if (!existingWord) {
-                    sendResponse({ status: 'error', message: 'Слово не найдено.' });
-                    return;
-                }
+      (async () => {
+        const {
+          wordId,
+          field,
+          value
+        } = message;
+        console.log(`WordBox background.js: Запрос на обновление слова ${wordId}, поле ${field}, значение ${value}`);
+        try {
+          // Получаем слово из базы
+          const existingWord = await window.WordBoxDB.getWord(db, wordId); // Добавим getWord в indexedDB.js
+          if (!existingWord) {
+            sendResponse({
+              status: 'error',
+              message: 'Слово не найдено.'
+            });
+            return;
+          }
 
-                // Обновляем соответствующее поле
-                if (field === 'translation') {
-                    existingWord[field] = value.split(',').map(s => s.trim()).filter(s => s.length > 0); // Перевод может быть массивом
-                } else {
-                    existingWord[field] = value;
-                }
-                
-                // Обновляем в базе данных
-                const updatedWord = await window.WordBoxDB.putWord(db, existingWord); // Добавим putWord в indexedDB.js
-                console.log('WordBox background.js: Слово успешно обновлено:', updatedWord);
-                sendResponse({ status: 'success', word: updatedWord });
-            } catch (error) {
-                console.error(`WordBox background.js: Ошибка при обновлении слова ${wordId}:`, error);
-                sendResponse({ status: 'error', message: error.message });
-            }
-        })();
-        return true;
+          // Обновляем соответствующее поле
+          if (field === 'translation') {
+            existingWord[field] = value.split(',').map(s => s.trim()).filter(s => s.length > 0); // Перевод может быть массивом
+          } else if (field === 'tags') { // *** Добавлено: обработка поля tags ***
+            // Ожидаем, что value для tags будет массивом строк
+            existingWord[field] = Array.isArray(value) ? value : String(value).split(',').map(s => s.trim()).filter(s => s.length > 0);
+          } else {
+            existingWord[field] = value;
+          }
+
+          // Обновляем в базе данных
+          const updatedWord = await window.WordBoxDB.putWord(db, existingWord); // Добавим putWord в indexedDB.js
+          console.log('WordBox background.js: Слово успешно обновлено:', updatedWord);
+          sendResponse({
+            status: 'success',
+            word: updatedWord
+          });
+        } catch (error) {
+          console.error(`WordBox background.js: Ошибка при обновлении слова ${wordId}:`, error);
+          sendResponse({
+            status: 'error',
+            message: error.message
+          });
+        }
+      })();
+      return true;
 
 
     case 'deleteWord':

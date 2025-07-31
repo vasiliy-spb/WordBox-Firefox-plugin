@@ -1,7 +1,9 @@
 // src/lib/indexedDB.js
+
 (function() {
   const DB_NAME = 'WordBoxDB';
-  const DB_VERSION = 3; // *** УВЕЛИЧИЛИ ВЕРСИЮ БАЗЫ ДАННЫХ *** [cite: 655]
+  // *** УВЕЛИЧИВАЕМ ВЕРСИЮ БАЗЫ ДАННЫХ ДО 4 ***
+  const DB_VERSION = 4;
   const STORE_NAME_WORDS = 'words';
 
   let db = null;
@@ -43,7 +45,28 @@
           database.deleteObjectStore('translation_dictionary');
           console.log('Old object store "translation_dictionary" deleted.');
         }
-        // Больше не создаем хранилище для translation_dictionary
+
+        // *** ЛОГИКА МИГРАЦИИ для добавления поля 'tags' (новая версия DB_VERSION 4) ***
+        // Если база данных обновляется до версии 4 (или выше), убедимся, что у всех слов есть поле 'tags'
+        if (event.oldVersion < 4) {
+          const objectStore = event.target.transaction.objectStore(STORE_NAME_WORDS);
+          // Открываем курсор для итерации по всем существующим словам
+          objectStore.openCursor().onsuccess = function(event) {
+            const cursor = event.target.result;
+            if (cursor) {
+              const word = cursor.value;
+              // Если у слова нет поля tags, добавляем его как пустой массив
+              if (!word.tags) {
+                word.tags = [];
+                cursor.update(word); // Обновляем слово в хранилище
+                console.log(`IndexedDB: Добавлено поле 'tags' для слова "${word.word}"`);
+              }
+              cursor.continue();
+            } else {
+              console.log('IndexedDB: Миграция поля "tags" завершена.');
+            }
+          };
+        }
       };
     });
   }
@@ -86,6 +109,14 @@
           if (newWordData.transcription) {
             existingWord.transcription = newWordData.transcription;
           }
+          // *** Обновляем теги, если они пришли новые (при ручном добавлении/редактировании) ***
+          // Если newWordData содержит tags, используем их. Иначе сохраняем существующие.
+          if (Array.isArray(newWordData.tags)) {
+              existingWord.tags = newWordData.tags;
+          } else if (!existingWord.tags) {
+              existingWord.tags = []; // Убедимся, что поле tags всегда существует
+          }
+
 
           const putRequest = store.put(existingWord);
 
@@ -99,6 +130,11 @@
           };
         } else {
           // Добавляем новое слово
+          // *** Убедимся, что newWordData.tags всегда массив ***
+          if (!Array.isArray(newWordData.tags)) {
+            newWordData.tags = [];
+          }
+
           const addRequest = store.add(newWordData);
 
           addRequest.onsuccess = () => {
@@ -217,9 +253,8 @@
       const store = transaction.objectStore(STORE_NAME_WORDS);
       const request = store.delete(wordId);
 
-
       request.onsuccess = () => {
-        console.log('IndexedDB (deleteWord): Word deleted successfully:', wordId);
+        console.log(`IndexedDB (deleteWord): Word with ID ${wordId} deleted successfully.`);
         resolve();
       };
 
@@ -230,14 +265,13 @@
     });
   }
 
-  // Прикрепляем функции к глобальному объекту window, чтобы они были доступны в background.js
+  // Делаем функции доступными глобально через window.WordBoxDB
   window.WordBoxDB = {
     openDatabase,
     addWord,
+    getWord,
+    putWord,
     getAllWords,
-    deleteWord,
-    getWord, // Добавлено
-    putWord // Добавлено
+    deleteWord
   };
-
 })();
