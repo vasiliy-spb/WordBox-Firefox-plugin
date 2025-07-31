@@ -297,3 +297,149 @@ body.dark-theme .editable.transcription {
 body.dark-theme .editable.translation {
     color: #ddd;
 }
+
+/* src/styles/popup.css */
+
+/* ... (существующие стили) ... */
+
+.header {
+    display: flex;
+    justify-content: space-between; /* Распределяет элементы по краям */
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.header-actions { /* Новый класс для контейнера кнопок в заголовке */
+    display: flex;
+    gap: 10px; /* Отступ между кнопками */
+    align-items: center;
+}
+
+.header-button { /* Общие стили для кнопок в заголовке */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    color: var(--text-color);
+}
+
+.header-button:hover {
+    background-color: rgba(0,0,0,0.1);
+}
+
+body.dark-theme .header-button:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* Стили для модального окна */
+.modal {
+    display: none; /* Скрыто по умолчанию */
+    position: fixed; /* Поверх всего */
+    z-index: 1000; /* Высокий z-index */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Включение прокрутки, если содержимое слишком большое */
+    background-color: rgba(0,0,0,0.4); /* Полупрозрачный фон */
+    justify-content: center;
+    align-items: center;
+    padding-top: 50px; /* Отступ сверху */
+    box-sizing: border-box;
+}
+
+.modal-content {
+    background-color: var(--card-bg-color);
+    margin: auto; /* Центрирование */
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 300px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    color: var(--text-color);
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    font-size: 1.2em;
+    color: var(--header-color);
+    text-align: center;
+}
+
+.modal-content input[type="text"] {
+    width: calc(100% - 20px); /* Учитываем padding */
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    box-sizing: border-box;
+}
+
+.modal-content input[type="text"]:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+body.dark-theme .modal-content input[type="text"] {
+    background-color: #4a4a4a;
+    border-color: #666;
+    color: #e0e0e0;
+}
+
+body.dark-theme .modal-content input[type="text"]:focus {
+    border-color: #66b3ff;
+    box-shadow: 0 0 0 2px rgba(102, 179, 255, 0.3);
+}
+
+.modal-content button {
+    padding: 10px 15px;
+    background-color: var(--export-btn-bg);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease;
+}
+
+.modal-content button:hover {
+    background-color: var(--export-btn-hover-bg);
+}
+
+.close-button {
+    color: var(--text-color);
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: var(--delete-icon-color);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.error-message {
+    color: var(--delete-icon-color); /* Красный цвет для ошибок */
+    font-size: 0.9em;
+    text-align: center;
+    margin-top: -10px; /* Чтобы поднять ближе к полю ввода */
+    display: none; /* Скрыто по умолчанию */
+}

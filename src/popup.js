@@ -258,6 +258,89 @@ function toggleTheme() {
     console.log(`WordBox popup.js: Тема переключена на: ${newTheme}`);
 }
 
+// ДОБАВЛЯЕМ КНОПКУ РУЧНОГО ДОБАВЛЕНИЯ СЛОВА
+
+// Переменные для модального окна
+const addWordModal = document.getElementById('addWordModal');
+const addWordButton = document.getElementById('addWordButton');
+const closeButton = document.querySelector('.modal .close-button');
+const manualWordInput = document.getElementById('manualWordInput');
+const submitManualWordButton = document.getElementById('submitManualWord');
+const manualWordError = document.getElementById('manualWordError');
+
+// Открытие модального окна
+addWordButton.addEventListener('click', () => {
+    addWordModal.style.display = 'flex'; // Используем flex для центрирования
+    manualWordInput.value = ''; // Очищаем поле ввода
+    manualWordError.textContent = ''; // Очищаем сообщение об ошибке
+    manualWordError.style.display = 'none'; // Скрываем сообщение об ошибке
+    manualWordInput.focus(); // Устанавливаем фокус на поле ввода
+});
+
+// Закрытие модального окна по клику на "x"
+closeButton.addEventListener('click', () => {
+    addWordModal.style.display = 'none';
+});
+
+// Закрытие модального окна по клику вне его (на сером фоне)
+window.addEventListener('click', (event) => {
+    if (event.target === addWordModal) {
+        addWordModal.style.display = 'none';
+    }
+});
+
+// Обработка отправки слова из модального окна
+submitManualWordButton.addEventListener('click', async () => {
+    const word = manualWordInput.value.trim();
+    if (word === '') {
+        manualWordError.textContent = 'Пожалуйста, введите слово.';
+        manualWordError.style.display = 'block';
+        return;
+    }
+
+    // Простая проверка на английские буквы. Можно улучшить.
+    const isEnglishWord = /^[a-zA-Z']+$/.test(word);
+    if (!isEnglishWord) {
+        manualWordError.textContent = 'Пожалуйста, введите корректное английское слово (только буквы и апострофы).';
+        manualWordError.style.display = 'block';
+        return;
+    }
+
+    manualWordError.style.display = 'none'; // Скрываем ошибку, если все ок
+
+    // Отправляем слово в background скрипт для обработки
+    try {
+        // Мы не можем получить sourceUrl для вручную введенных слов
+        const response = await browser.runtime.sendMessage({
+            action: 'addWord',
+            word: word,
+            sourceUrl: 'manual_entry' // Указываем, что это ручной ввод
+        });
+
+        if (response.status === 'success') {
+            console.log('Слово успешно добавлено вручную:', response.word);
+            addWordModal.style.display = 'none'; // Закрываем модальное окно
+            displayWords(); // Обновляем список слов в словаре
+        } else {
+            console.error('Ошибка при ручном добавлении слова:', response.message);
+            manualWordError.textContent = `Ошибка: ${response.message}`;
+            manualWordError.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Ошибка при отправке слова для ручного добавления:', error);
+        manualWordError.textContent = 'Произошла ошибка при добавлении слова.';
+        manualWordError.style.display = 'block';
+    }
+});
+
+// Добавляем обработчик Enter на поле ввода
+manualWordInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault(); // Предотвращаем дефолтное поведение (например, отправку формы)
+        submitManualWordButton.click(); // Имитируем клик по кнопке "Добавить"
+    }
+});
+
 // Вызываем displayWords при загрузке попапа
 document.addEventListener('DOMContentLoaded', displayWords);
 
